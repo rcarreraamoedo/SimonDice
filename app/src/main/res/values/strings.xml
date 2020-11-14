@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">SimonDice</string>
+    <string name="greenButton">Verde</string>
+    <string name="redButton">Rojo</string>
+    <string name="yellowButton">Amarillo</string>
+    <string name="blueButton">Azul</string>
+    <string name="startButton">Inicio</string>
+    <string name="resetButton">Reinicio</string>
+</resources>
