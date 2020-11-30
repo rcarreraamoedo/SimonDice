@@ -6,4 +6,6 @@
     <string name="blueButton">Azul</string>
     <string name="startButton">Inicio</string>
     <string name="resetButton">Reinicio</string>
+    <string name="label_button">ronda</string>
+    <string name="start">comienza</string>
 </resources>
