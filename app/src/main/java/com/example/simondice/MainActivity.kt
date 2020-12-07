@@ -1,121 +1,84 @@
 package com.example.simondice
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import java.util.Random
+
+// para no usar findViewById
+import kotlinx.android.synthetic.main.activity_main.*
+
+// para observar LiveDatas
 import androidx.activity.viewModels
 import androidx.lifecycle.Observer
-import kotlinx.android.synthetic.main.activity_main.*
-import android.widget.TextView
-import kotlin.random.Random
 
 class MainActivity : AppCompatActivity() {
+    // para que sea mas facil la etiqueta del log
+    private val TAG_LOG: String? = "mensaje Main"
+
+    // contenedor de imagen
+    lateinit var diceImage: ImageView
+
+    val duration = Toast.LENGTH_LONG
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        // cargamos layout
         setContentView(R.layout.activity_main)
 
         // Instanciamos el ViewModel
         // nomenclatura que necesita utilizar jvm 1.8
         // se configure en project structure -> Modules -> Target Compatibillity
-
         val miModelo by viewModels<MyViewModel>()
 
-        /*val texto = findViewById<TextView>(R.id.textRonda)
-        texto.text = miModelo.ronda.value.toString()*/
-
-
         // observamos cambios en ronda y actualizamos textView
-        miModelo.ronda.observe(this, Observer{
-                nuevaRonda -> textRonda.text = nuevaRonda.toString()
+        miModelo.ronda.observe(
+                this,
+                Observer(fun(nuevaRonda: MutableList<Int>) {
+                    textRonda.text = nuevaRonda.toString()
+                    // ejemplo de obtener el ultimo elemento
+                    if (nuevaRonda.lastIndex > 0)
+                        Log.d(TAG_LOG, "Último elemento: " + nuevaRonda.get(nuevaRonda.lastIndex).toString())
+                })
+        )
+
+        // observamos cambios en msjBoton y actualizamos texto del Button
+        miModelo.msjBoton.observe(this, Observer {
+            nuevoMsg -> comienzo.text = nuevoMsg
         })
 
-        sumarRonda.setOnClickListener {
+        val text = getString(R.string.saludo)
+        val toast = Toast.makeText(applicationContext, text, duration)
+
+        val botonTirar: Button = findViewById(R.id.roll_button)
+        botonTirar.setOnClickListener {
+            // cambia la imagen
+            rollDice()
+            // llama a las corutinas
+            miModelo.salidaLog()
+            // añado una ronda en el ViewModel
             miModelo.sumarRonda()
-        }
-        comienzo.setOnClickListener {
-            miModelo.ronda.value=0
-        }
-        var sec: MutableList<Int> = mutableListOf<Int>()
-        var user_sec: MutableList<Int> = mutableListOf<Int>()
-        var finished  = false
-        val button_red : Button = findViewById(R.id.red)
-        val button_yellow : Button = findViewById(R.id.yellow)
-        val button_blue : Button = findViewById(R.id.blue)
-        val button_green : Button = findViewById(R.id.green)
-        val button_start : Button = findViewById(R.id.start)
-        val button_check : Button = findViewById(R.id.check)
-        val toast = Toast.makeText(applicationContext,"Juego terminado", Toast.LENGTH_SHORT)
-        val toast2 = Toast.makeText(applicationContext,"Inicio", Toast.LENGTH_SHORT)
-
-        button_start.setOnClickListener{
-            finished = false
-            reset(sec,user_sec)
-            addToSecu(sec)
-            toast2.show()
-            showSec(sec)
+            Log.d("mensajeCorutina", "Actualizo ronda")
         }
 
-        button_check.setOnClickListener{
-            if(finished==false){
-                if(checkSec(sec,user_sec)){
-                    addToSecu(sec)
-                    user_sec.clear()
-                    showSec(sec)
-                }else{
-                    finished=true
-                    toast.show()
-                }
-            }
-        }
-        button_red.setOnClickListener{
-            addUserSec(user_sec,1)
-        }
-        button_green.setOnClickListener{
-            addUserSec(user_sec,2)
-        }
-        button_yellow.setOnClickListener{
-            addUserSec(user_sec,3)
-        }
-        button_blue.setOnClickListener{
-            addUserSec(user_sec,4)
-        }
-        //showSec(sec)
-
+        diceImage = findViewById(R.id.dice_image)
     }
 
-    fun addToSecu(sec : MutableList<Int>)  {
-        val numb= Random.nextInt(4) + 1
-        sec.add(numb)
-    }
-
-    fun checkSec(sec : MutableList<Int>, secUsr : MutableList<Int>) : Boolean {
-        return sec == secUsr
-    }
-
-    fun reset(sec: MutableList<Int>, secUsr: MutableList<Int>){
-        sec.clear()
-        secUsr.clear()
-    }
-
-    fun addUserSec(secUsr: MutableList<Int>, color: Int){
-        when(color){
-            1 -> secUsr.add(1)
-            2 -> secUsr.add(2)
-            3 -> secUsr.add(3)
-            else -> secUsr.add(4)
+    private fun rollDice() {
+        val randomInt = Random().nextInt(6) + 1
+        val drawableResource = when (randomInt) {
+            1 -> R.drawable.dice_1
+            2 -> R.drawable.dice_2
+            3 -> R.drawable.dice_3
+            4 -> R.drawable.dice_4
+            5 -> R.drawable.dice_5
+            else -> R.drawable.dice_6
         }
-    }
 
-    fun showSec(sec: MutableList<Int>) {
-        Toast.makeText(applicationContext, "Inicio", Toast.LENGTH_SHORT)
-        for (color in sec) {
-            when (color) {
-                1 -> Toast.makeText(applicationContext, "Rojo", Toast.LENGTH_SHORT).show()
-                2 -> Toast.makeText(applicationContext, "Verde", Toast.LENGTH_SHORT).show()
-                3 -> Toast.makeText(applicationContext, "Amarillo", Toast.LENGTH_SHORT).show()
-                4 -> Toast.makeText(applicationContext, "Azul", Toast.LENGTH_SHORT).show()
-            }
-        }
+        diceImage.setImageResource(drawableResource)
     }
 }
